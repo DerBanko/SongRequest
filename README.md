@@ -1,8 +1,8 @@
 # SongRequest
 
-A song request system which helps you 
+A song request system which helps you to automatically add songs and skip songs by redeeming channel point rewards in the Twitch chat.
 
-## How to use
+## How to setup
 
 1. Start the application; stop it afterward.
 2. Open the newly created config.json file.

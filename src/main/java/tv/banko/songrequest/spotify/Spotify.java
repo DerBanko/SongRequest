@@ -47,8 +47,8 @@ public class Spotify {
             return CompletableFuture.completedFuture(query.split(" ")[0]);
         }
 
-        if (query.contains("open.spotify.com/track/")) {
-            String trackId = query.split("open.spotify.com/track/")[1].split("\\?")[0];
+        if (query.contains("open.spotify.com/")) {
+            String trackId = query.split("/track/")[1].split("\\?")[0];
             return CompletableFuture.completedFuture("spotify:track:" + trackId);
         }
 
