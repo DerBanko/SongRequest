@@ -1,0 +1,27 @@
+name: 'Docker Build'
+on:
+  push:
+    branches:
+      - main
+      - test
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker-staging:
+    uses: ./.github/workflows/docker-build.yaml
+    if: "github.ref == 'refs/heads/test'"
+    with:
+      image-name: "songrequest"
+      context: "songrequest"
+      tag: "test"
+  docker-production:
+    uses: ./.github/workflows/docker-build.yaml
+    if: "github.ref == 'refs/heads/main'"
+    with:
+      image-name: "songrequest"
+      context: "songrequest"
+      tag: "latest"
