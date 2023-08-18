@@ -17,9 +17,16 @@ public class Config {
     private JsonObject object;
 
     public Config() {
-        File file = new File("config.json");
+        File file = new File("config/config.json");
 
         if (!file.exists()) {
+
+            File dir = new File("config");
+
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
             try {
                 file.createNewFile();
                 try (InputStream stream = this.getClass().getClassLoader().getResourceAsStream("config.json")) {
