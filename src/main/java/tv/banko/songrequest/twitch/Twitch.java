@@ -15,6 +15,7 @@ import tv.banko.songrequest.SongRequest;
 import tv.banko.songrequest.config.Config;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -168,18 +169,22 @@ public class Twitch {
         CustomRewardList rewardList = this.client.getHelix().getCustomRewards(this.userCredentials.getAccessToken(), this.broadcasterId,
                 null, true).execute();
 
-        if (rewardList.getRewards().stream().noneMatch(reward -> reward.getTitle().equals(config.getTwitchRedemptionAddSong()))) {
+        String addSong = config.getTwitchRedemptionAddSong();
+
+        if (!Objects.equals(addSong, "") && rewardList.getRewards().stream().noneMatch(reward -> reward.getTitle().equals(addSong))) {
             this.client.getHelix().createCustomReward(this.userCredentials.getAccessToken(), this.broadcasterId,
                     new CustomReward().withCost(1).withIsEnabled(false)
                             .withIsUserInputRequired(true)
-                            .withTitle(config.getTwitchRedemptionAddSong())
+                            .withTitle(addSong)
                             .withBroadcasterId(this.broadcasterId)).execute();
         }
 
-        if (rewardList.getRewards().stream().noneMatch(reward -> reward.getTitle().equals(config.getTwitchRedemptionSkipSong()))) {
+        String skipSong = config.getTwitchRedemptionSkipSong();
+
+        if (!Objects.equals(skipSong, "") && rewardList.getRewards().stream().noneMatch(reward -> reward.getTitle().equals(skipSong))) {
             this.client.getHelix().createCustomReward(this.userCredentials.getAccessToken(), this.broadcasterId,
                     new CustomReward().withCost(1).withIsEnabled(false)
-                            .withTitle(config.getTwitchRedemptionSkipSong())
+                            .withTitle(skipSong)
                             .withBroadcasterId(this.broadcasterId)).execute();
         }
     }
