@@ -1,0 +1,22 @@
+{
+    "twitch": {
+        "token": "Bearer TOKEN",
+        "refreshToken": "REFRESH_TOKEN",
+        "clientId": "SPOTIFY_CLIENT_ID",
+        "clientSecret": "SPOTIFY_CLIENT_SECRET",
+        "expiresAt": 0,
+        "channel": "DerBanko",
+        "redemption": {
+            "addSong": "Song Request",
+            "skipSong": "Song skippen"
+        }
+    },
+    "spotify": {
+        "token": "Bearer TOKEN",
+        "refreshToken": "REFRESH_TOKEN",
+        "expiresAt": 0,
+        "clientId": "SPOTIFY_CLIENT_ID",
+        "clientSecret": "SPOTIFY_CLIENT_SECRET",
+        "redirectURI": "SPOTIFY_CLIENT_REDIRECT_URI"
+    }
+}
