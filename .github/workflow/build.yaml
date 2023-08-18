@@ -16,12 +16,10 @@ jobs:
     if: "github.ref == 'refs/heads/test'"
     with:
       image-name: "songrequest"
-      context: "songrequest"
       tag: "test"
   docker-production:
     uses: ./.github/workflows/docker-build.yaml
     if: "github.ref == 'refs/heads/main'"
     with:
       image-name: "songrequest"
-      context: "songrequest"
       tag: "latest"
