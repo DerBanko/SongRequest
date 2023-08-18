@@ -4,7 +4,7 @@ WORKDIR /home/gradle/
 RUN gradle installDist --no-daemon
 
 FROM openjdk:17.0.2-oracle
-COPY --from=build /home/gradle/build/libs/*.jar /usr/app/butils-bot.jar
-COPY --from=build /home/gradle/build/install/gradle/lib/ /usr/app/lib/
+COPY --from=build /home/gradle/build/libs/*.jar /usr/app/songrequest.jar
+COPY --from=build /home/gradle/build/install/SpotifySR/lib/ /usr/app/lib/
 WORKDIR /usr/app/
-ENTRYPOINT ["java", "-jar", "SpotifySR-1.0-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "songrequest.jar"]

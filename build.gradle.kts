@@ -47,3 +47,7 @@ tasks {
 tasks.test {
     useJUnitPlatform()
 }
+
+application {
+    mainClass.set("tv.banko.songrequest.Main")
+}
