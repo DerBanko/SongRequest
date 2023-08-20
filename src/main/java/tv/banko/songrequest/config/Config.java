@@ -14,10 +14,11 @@ import java.util.function.BiConsumer;
 
 public class Config {
 
+    private final File file;
     private JsonObject object;
 
     public Config() {
-        File file = new File("config/config.json");
+        this.file = new File("config/config.json");
 
         if (!file.exists()) {
 
@@ -283,11 +284,9 @@ public class Config {
      * Save the config.
      */
     private void save() {
-        File file = new File("config.json");
-
-        if (!file.exists()) {
+        if (!this.file.exists()) {
             try {
-                file.createNewFile();
+                this.file.createNewFile();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
