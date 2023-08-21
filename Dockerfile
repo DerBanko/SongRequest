@@ -5,6 +5,6 @@ RUN gradle installDist --no-daemon
 
 FROM openjdk:17.0.2-oracle
 COPY --from=build /home/gradle/build/libs/*.jar /usr/app/songrequest.jar
-COPY --from=build /home/gradle/build/install/SpotifySR/lib/ /usr/app/lib/
+COPY --from=build /home/gradle/build/install/SongRequest/lib/ /usr/app/lib/
 WORKDIR /usr/app/
 ENTRYPOINT ["java", "-jar", "songrequest.jar"]
