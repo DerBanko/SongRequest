@@ -293,7 +293,7 @@ public class Config {
         }
 
         try {
-            FileWriter writer = new FileWriter(file, false);
+            FileWriter writer = new FileWriter(this.file, false);
             writer.write(this.object.toString());
             writer.close();
         } catch (IOException e) {

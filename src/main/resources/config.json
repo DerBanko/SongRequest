@@ -2,8 +2,8 @@
     "twitch": {
         "token": "Bearer TOKEN",
         "refreshToken": "REFRESH_TOKEN",
-        "clientId": "SPOTIFY_CLIENT_ID",
-        "clientSecret": "SPOTIFY_CLIENT_SECRET",
+        "clientId": "TWITCH_CLIENT_ID",
+        "clientSecret": "TWITCH_SPOTIFY_CLIENT_SECRET",
         "expiresAt": 0,
         "channel": "DerBanko",
         "redemption": {
