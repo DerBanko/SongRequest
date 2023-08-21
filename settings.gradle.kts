@@ -1,2 +1,2 @@
-rootProject.name = "SpotifySR"
+rootProject.name = "SongRequest"
 
