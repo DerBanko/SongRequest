@@ -15,6 +15,7 @@ dependencies {
     implementation("com.github.twitch4j:twitch4j:1.16.0")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("ch.qos.logback:logback-classic:1.3.5")
+    implementation("org.mongodb:mongodb-driver-reactivestreams:4.10.2")
 }
 
 java {
