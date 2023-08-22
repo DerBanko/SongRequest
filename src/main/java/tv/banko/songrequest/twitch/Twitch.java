@@ -78,7 +78,7 @@ public class Twitch {
 
         if (args[0].equalsIgnoreCase("!sr-spotify")) {
             this.validateCredentials().whenCompleteAsync((aBoolean, validateThrowable) ->
-                    this.request.getSpotify().getAPI().setAuthorizationFromCode(args[1]).whenCompleteAsync((o, authThrowable) -> {
+                    this.request.getSpotify().getAPI().getAuthorizationFromCode(args[1]).whenCompleteAsync((o, authThrowable) -> {
                         if (authThrowable != null) {
                             authThrowable.printStackTrace();
                             this.client.getChat().sendMessage(event.getUser().getName(),
@@ -202,13 +202,13 @@ public class Twitch {
 
         CompletableFuture<Boolean> future = new CompletableFuture<>();
 
-        this.api.regenerateAuthorizationCode().whenCompleteAsync((o, throwable) -> {
+        this.api.regenerateAuthorizationCode(this.request.getConfig().getSpotifyAccessToken()).whenCompleteAsync((response, throwable) -> {
             if (throwable != null) {
                 future.completeExceptionally(throwable);
                 return;
             }
 
-            String[] token = ((String) o).split(" ");
+            String[] token = response.accessToken().split(" ");
             this.userCredentials.updateCredential(new OAuth2Credential(token[0], token[1]));
             future.complete(true);
         });

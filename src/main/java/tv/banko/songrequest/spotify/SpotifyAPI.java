@@ -1,11 +1,13 @@
 package tv.banko.songrequest.spotify;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import tv.banko.songrequest.config.Config;
+import tv.banko.songrequest.spotify.api.SpotifyAccessToken;
+import tv.banko.songrequest.spotify.api.SpotifyPlayerAction;
+import tv.banko.songrequest.spotify.api.SpotifySearchTrack;
 import tv.banko.songrequest.util.HTTPMethod;
 
 import java.io.IOException;
@@ -20,9 +22,20 @@ public class SpotifyAPI {
     private final Spotify spotify;
     private final OkHttpClient client;
 
+    private final SpotifyPlayerAction playerAction;
+    private final SpotifySearchTrack searchTrack;
+    private final SpotifyAccessToken accessToken;
+
     public SpotifyAPI(@NotNull Spotify spotify) {
         this.spotify = spotify;
         this.client = new OkHttpClient();
+        this.playerAction = new SpotifyPlayerAction();
+        this.searchTrack = new SpotifySearchTrack();
+        this.accessToken = new SpotifyAccessToken(this);
+    }
+
+    public Spotify getSpotify() {
+        return spotify;
     }
 
     /**
@@ -31,10 +44,8 @@ public class SpotifyAPI {
      * @param spotifyTrackId The id of the track (spotify:track:<ID>).
      * @return A completable future which contains a true boolean when the execution was successful.
      */
-    public CompletableFuture<Object> addSongToQueue(@NotNull String spotifyTrackId) {
-        String url = MessageFormat.format("https://api.spotify.com/v1/me/player/queue?uri={0}",
-                spotifyTrackId);
-        return this.sendNoResponseBodyRequest(url);
+    public CompletableFuture<Boolean> addSongToQueue(@NotNull String accessToken, @NotNull String spotifyTrackId) {
+        return this.playerAction.addSongToQueue(this.client, accessToken, spotifyTrackId);
     }
 
     /**
@@ -42,9 +53,8 @@ public class SpotifyAPI {
      *
      * @return A completable future which contains a true boolean when the execution was successful.
      */
-    public CompletableFuture<Object> skipSong() {
-        String url = "https://api.spotify.com/v1/me/player/next";
-        return this.sendNoResponseBodyRequest(url);
+    public CompletableFuture<Boolean> skipSong(@NotNull String accessToken) {
+        return this.playerAction.skipSong(this.client, accessToken);
     }
 
     /**
@@ -53,46 +63,8 @@ public class SpotifyAPI {
      * @param query The query for the song.
      * @return A completable future which contains the track id (spotify:track:<ID>) string when the execution was successful.
      */
-    public CompletableFuture<Object> searchTrack(@NotNull String query) {
-        String url = MessageFormat.format("https://api.spotify.com/v1/search?q={0}&type={1}",
-                query, "track");
-
-        return this.sendRequest(url, HTTPMethod.GET, (response, future) -> {
-            if (future.isDone()) {
-                return;
-            }
-
-            if (response.body() == null) {
-                future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": null"));
-                return;
-            }
-
-            if (response.code() != 200) {
-                try {
-                    future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": " + response.body().string()));
-                } catch (IOException e) {
-                    future.completeExceptionally(e);
-                }
-                return;
-            }
-
-            try {
-                JsonObject object = JsonParser.parseString(response.body().string()).getAsJsonObject();
-                JsonObject tracks = object.getAsJsonObject("tracks");
-                JsonArray items = tracks.getAsJsonArray("items");
-
-                if (items.size() == 0) {
-                    future.completeExceptionally(new NullPointerException("No tracks found"));
-                    return;
-                }
-
-                JsonObject item = items.get(0).getAsJsonObject();
-                String id = item.get("id").getAsString();
-                future.complete("spotify:track:" + id);
-            } catch (IOException e) {
-                future.completeExceptionally(e);
-            }
-        });
+    public CompletableFuture<String> searchTrack(@NotNull String accessToken, @NotNull String query) {
+        return this.searchTrack.execute(this.client, accessToken, query);
     }
 
     /**
@@ -101,55 +73,8 @@ public class SpotifyAPI {
      * @param code The authorization code from the api request executed within the user's browser.
      * @return A completable future which contains a true boolean when the execution was successful.
      */
-    public CompletableFuture<Object> setAuthorizationFromCode(@NotNull String code) {
-        CompletableFuture<Object> future = new CompletableFuture<>();
-
-        Config config = this.spotify.getRequest().getConfig();
-        String url = MessageFormat.format("https://accounts.spotify.com/api/token" +
-                        "?code={0}&redirect_uri={1}&grant_type={2}",
-                code, config.getSpotifyRedirectURI(), "authorization_code");
-        String basicAuth = Base64.getEncoder().encodeToString((config.getSpotifyClientID() + ":"
-                + config.getSpotifyClientSecret()).getBytes(StandardCharsets.UTF_8));
-
-        Request.Builder builder = new Request.Builder()
-                .url(url)
-                .header("Authorization", "Basic " + basicAuth)
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .post(RequestBody.create(new byte[0]));
-
-        this.client.newCall(builder.build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                future.completeExceptionally(e);
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.body() == null) {
-                    future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": null"));
-                    return;
-                }
-
-                if (response.code() != 200) {
-                    future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": " + response.body().string()));
-                    return;
-                }
-
-                try {
-                    JsonObject object = JsonParser.parseString(response.body().string()).getAsJsonObject();
-
-                    config.setValue("spotify.token", "Bearer " + object.get("access_token").getAsString());
-                    config.setValue("spotify.expiresAt", System.currentTimeMillis()
-                            + (object.get("expires_in").getAsInt() * 1000L));
-                    config.setValue("spotify.refreshToken", object.get("refresh_token").getAsString());
-
-                    future.complete(true);
-                } catch (IOException e) {
-                    future.completeExceptionally(e);
-                }
-            }
-        });
-        return future;
+    public CompletableFuture<SpotifyAccessToken.Response> getAuthorizationFromCode(@NotNull String code) {
+        return this.accessToken.getAccessToken(this.client, code);
     }
 
     /**
@@ -157,148 +82,7 @@ public class SpotifyAPI {
      *
      * @return A completable future which contains the access token when the execution was successful.
      */
-    private CompletableFuture<Object> regenerateAccessToken() {
-        CompletableFuture<Object> future = new CompletableFuture<>();
-
-        Config config = this.spotify.getRequest().getConfig();
-        String url = MessageFormat.format("https://accounts.spotify.com/api/token" +
-                        "?refresh_token={0}&grant_type={1}",
-                config.getSpotifyRefreshToken(), "refresh_token");
-        String basicAuth = Base64.getEncoder().encodeToString((config.getSpotifyClientID() + ":"
-                + config.getSpotifyClientSecret()).getBytes(StandardCharsets.UTF_8));
-
-        Request.Builder builder = new Request.Builder()
-                .url(url)
-                .header("Authorization", "Basic " + basicAuth)
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .post(RequestBody.create(new byte[0]));
-
-        this.client.newCall(builder.build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                future.completeExceptionally(e);
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.body() == null) {
-                    future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": null"));
-                    return;
-                }
-
-                if (response.code() != 200) {
-                    future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": " + response.body().string()));
-                    return;
-                }
-
-                try {
-                    JsonObject object = JsonParser.parseString(response.body().string()).getAsJsonObject();
-
-                    config.setValue("spotify.token", "Bearer " + object.get("access_token").getAsString());
-                    config.setValue("spotify.expiresAt", System.currentTimeMillis()
-                            + (object.get("expires_in").getAsInt() * 1000L));
-
-                    future.complete(config.getSpotifyAccessToken());
-                } catch (IOException e) {
-                    future.completeExceptionally(e);
-                }
-            }
-        });
-
-        return future;
+    public CompletableFuture<SpotifyAccessToken.Response> regenerateAccessToken(@NotNull String refreshToken) {
+        return this.accessToken.regenerateToken(this.client, refreshToken);
     }
-
-    /**
-     * Send a request with the post method and no response body when the execution was successful.
-     *
-     * @param url The url of the api endpoint.
-     * @return A completable future which contains a true boolean when the execution was successful.
-     */
-    private CompletableFuture<Object> sendNoResponseBodyRequest(@NotNull String url) {
-        return this.sendRequest(url, HTTPMethod.POST, (response, future) -> {
-            if (future.isDone()) {
-                return;
-            }
-
-            if (response.code() != 204) {
-                try {
-                    assert response.body() != null;
-                    future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": " + response.body().string()));
-                } catch (IOException e) {
-                    future.completeExceptionally(e);
-                }
-                return;
-            }
-
-            future.complete(true);
-        });
-    }
-
-    /**
-     * Send a request to a specific api endpoint.
-     *
-     * @param url      The url of the api endpoint.
-     * @param method   The method used to access the endpoint.
-     * @param consumer The response handling.
-     * @return A completable future which may be already completed with an exception; otherwise not completed yet.
-     */
-    private CompletableFuture<Object> sendRequest(@NotNull String url, @NotNull HTTPMethod method,
-                                                  @NotNull BiConsumer<Response, CompletableFuture<Object>> consumer) {
-        CompletableFuture<Object> future = new CompletableFuture<>();
-        this.getAccessToken().whenCompleteAsync((accessToken, throwable) -> {
-            if (throwable != null) {
-                future.completeExceptionally(throwable);
-                return;
-            }
-
-            Request.Builder builder = new Request.Builder()
-                    .url(url)
-                    .header("Authorization", this.spotify.getRequest().getConfig().getSpotifyAccessToken());
-
-            switch (method) {
-                case POST -> builder.post(RequestBody.create(new byte[0]));
-                case GET -> builder.get();
-            }
-
-            this.client.newCall(builder.build()).enqueue(new Callback() {
-                @Override
-                public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                    future.completeExceptionally(e);
-                }
-
-                @Override
-                public void onResponse(@NotNull Call call, @NotNull Response response) {
-                    consumer.accept(response, future);
-                }
-            });
-        });
-        return future;
-    }
-
-    /**
-     * Get the access token of the user.
-     * May be regenerated when the access token expires in less than 5 seconds or is already expired.
-     *
-     * @return A completable future which contains the access token when the execution was successful.
-     */
-    private CompletableFuture<String> getAccessToken() {
-        Config config = this.spotify.getRequest().getConfig();
-
-        if ((config.getSpotifyExpiresAt() - 5000) > System.currentTimeMillis()) {
-            return CompletableFuture.completedFuture(config.getSpotifyAccessToken());
-        }
-
-        CompletableFuture<String> future = new CompletableFuture<>();
-
-        this.regenerateAccessToken().whenCompleteAsync((o, throwable) -> {
-            if (throwable != null) {
-                future.completeExceptionally(throwable);
-                return;
-            }
-            future.complete(config.getSpotifyAccessToken());
-        });
-
-        return future;
-    }
-
 }

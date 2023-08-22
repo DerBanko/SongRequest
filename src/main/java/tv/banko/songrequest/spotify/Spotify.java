@@ -21,8 +21,8 @@ public class Spotify {
      * @param spotifyTrackId The id of the track (spotify:track:<ID>).
      * @return A completable future which contains a true boolean when the execution was successful.
      */
-    public CompletableFuture<Object> addSongToQueue(@NotNull String spotifyTrackId) {
-        return this.api.addSongToQueue(spotifyTrackId);
+    public CompletableFuture<Boolean> addSongToQueue(@NotNull String spotifyTrackId) {
+        return this.api.addSongToQueue(this.request.getConfig().getSpotifyAccessToken(), spotifyTrackId);
     }
 
     /**
@@ -30,8 +30,8 @@ public class Spotify {
      *
      * @return A completable future which contains a true boolean when the execution was successful.
      */
-    public CompletableFuture<Object> skipSong() {
-        return this.api.skipSong();
+    public CompletableFuture<Boolean> skipSong() {
+        return this.api.skipSong(this.request.getConfig().getSpotifyAccessToken());
     }
 
     /**
@@ -42,7 +42,7 @@ public class Spotify {
      * @param query The query entered by the user.
      * @return A completable future which contains the track id (spotify:track:<ID>) string when the execution was successful.
      */
-    public CompletableFuture<Object> getTrackId(@NotNull String query) {
+    public CompletableFuture<String> getTrackId(@NotNull String query) {
         if (query.startsWith("spotify:track:")) {
             return CompletableFuture.completedFuture(query.split(" ")[0]);
         }
@@ -52,7 +52,7 @@ public class Spotify {
             return CompletableFuture.completedFuture("spotify:track:" + trackId);
         }
 
-        return this.api.searchTrack(query);
+        return this.api.searchTrack(this.request.getConfig().getSpotifyAccessToken(), query);
     }
 
     public SongRequest getRequest() {
