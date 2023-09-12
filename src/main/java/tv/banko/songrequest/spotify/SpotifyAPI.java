@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 
 public class SpotifyAPI {
@@ -45,6 +46,90 @@ public class SpotifyAPI {
     public CompletableFuture<Object> skipSong() {
         String url = "https://api.spotify.com/v1/me/player/next";
         return this.sendNoResponseBodyRequest(url);
+    }
+
+    /**
+     * Skip to the previously playing song.
+     *
+     * @return A completable future which contains a true boolean when the execution was successful.
+     */
+    public CompletableFuture<Object> playLastSong() {
+        String url = "https://api.spotify.com/v1/me/player/previous";
+        return this.sendNoResponseBodyRequest(url);
+    }
+
+    /**
+     * Start the playback.
+     *
+     * @return A completable future which contains a true boolean when the execution was successful.
+     */
+    public CompletableFuture<Object> startPlayback() {
+        String url = "https://api.spotify.com/v1/me/player/play";
+        return this.sendNoResponseBodyRequest(url);
+    }
+
+    /**
+     * Pause the playback.
+     *
+     * @return A completable future which contains a true boolean when the execution was successful.
+     */
+    public CompletableFuture<Object> pausePlayback() {
+        String url = "https://api.spotify.com/v1/me/player/pause";
+        return this.sendNoResponseBodyRequest(url);
+    }
+
+    /**
+     * Offset the playback progress.
+     *
+     * @return A completable future which contains a true boolean when the execution was successful.
+     */
+    public CompletableFuture<Object> offsetPlaybackProgress(int offset) {
+        CompletableFuture<Object> future = new CompletableFuture<>();
+        String currentURL = "https://api.spotify.com/v1/me/player/pause";
+        String offsetURL = "https://api.spotify.com/v1/me/player/seek?position_ms={0}";
+
+        this.sendRequest(currentURL, HTTPMethod.GET, (response, currentFuture) -> {
+            if (currentFuture.isDone()) {
+                try {
+                    future.complete(currentFuture.get());
+                } catch (InterruptedException | ExecutionException e) {
+                    future.completeExceptionally(e);
+                }
+                return;
+            }
+
+            if (response.body() == null) {
+                future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": null"));
+                return;
+            }
+
+            if (response.code() != 200) {
+                try {
+                    future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": " + response.body().string()));
+                } catch (IOException e) {
+                    future.completeExceptionally(e);
+                }
+                return;
+            }
+
+            try {
+                JsonObject object = JsonParser.parseString(response.body().string()).getAsJsonObject();
+                int progress = object.get("progress_ms").getAsInt() + offset;
+
+                this.sendNoResponseBodyRequest(MessageFormat.format(offsetURL, "" + progress), HTTPMethod.PUT)
+                        .whenCompleteAsync((o, throwable) -> {
+                            if (throwable != null) {
+                                future.completeExceptionally(throwable);
+                                return;
+                            }
+                            future.complete(o);
+                        });
+            } catch (IOException e) {
+                future.completeExceptionally(e);
+            }
+        });
+
+        return this.sendNoResponseBodyRequest(currentURL);
     }
 
     /**
@@ -214,8 +299,8 @@ public class SpotifyAPI {
      * @param url The url of the api endpoint.
      * @return A completable future which contains a true boolean when the execution was successful.
      */
-    private CompletableFuture<Object> sendNoResponseBodyRequest(@NotNull String url) {
-        return this.sendRequest(url, HTTPMethod.POST, (response, future) -> {
+    private CompletableFuture<Object> sendNoResponseBodyRequest(@NotNull String url, @NotNull HTTPMethod method) {
+        return this.sendRequest(url, method, (response, future) -> {
             if (future.isDone()) {
                 return;
             }
@@ -232,6 +317,16 @@ public class SpotifyAPI {
 
             future.complete(true);
         });
+    }
+
+    /**
+     * Send a request with the post method and no response body when the execution was successful.
+     *
+     * @param url The url of the api endpoint.
+     * @return A completable future which contains a true boolean when the execution was successful.
+     */
+    private CompletableFuture<Object> sendNoResponseBodyRequest(@NotNull String url) {
+        return this.sendNoResponseBodyRequest(url, HTTPMethod.POST);
     }
 
     /**

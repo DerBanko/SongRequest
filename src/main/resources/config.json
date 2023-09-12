@@ -8,7 +8,12 @@
         "channel": "DerBanko",
         "redemption": {
             "addSong": "Song Request",
-            "skipSong": "Song skippen"
+            "skipSong": "Song skippen",
+            "playLastSong": "Letzten Song spielen",
+            "startPlayback": "Playback starten",
+            "pausePlayback": "Playback pausieren",
+            "skipTenSeconds": "Song 10s skippen",
+            "playLastTenSeconds": "Letzte 10s spielen"
         }
     },
     "spotify": {

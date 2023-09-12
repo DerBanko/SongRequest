@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import tv.banko.songrequest.SongRequest;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class Spotify {
 
@@ -32,6 +33,51 @@ public class Spotify {
      */
     public CompletableFuture<Object> skipSong() {
         return this.api.skipSong();
+    }
+
+    /**
+     * Start the playback.
+     *
+     * @return A completable future which contains a true boolean when the execution was successful.
+     */
+    public CompletableFuture<Object> startPlayback() {
+        return this.api.startPlayback();
+    }
+
+    /**
+     * Pause the playback.
+     *
+     * @return A completable future which contains a true boolean when the execution was successful.
+     */
+    public CompletableFuture<Object> pausePlayback() {
+        return this.api.pausePlayback();
+    }
+
+    /**
+     * Skip to the previously playing song.
+     *
+     * @return A completable future which contains a true boolean when the execution was successful.
+     */
+    public CompletableFuture<Object> playLastSong() {
+        return this.api.playLastSong();
+    }
+
+    /**
+     * Skip ten seconds.
+     *
+     * @return A completable future which contains a true boolean when the execution was successful.
+     */
+    public CompletableFuture<Object> skipTenSeconds() {
+        return this.api.offsetPlaybackProgress((int) TimeUnit.SECONDS.toMillis(10));
+    }
+
+    /**
+     * Play the last ten seconds.
+     *
+     * @return A completable future which contains a true boolean when the execution was successful.
+     */
+    public CompletableFuture<Object> playLastTenSeconds() {
+        return this.api.offsetPlaybackProgress((-1) * (int) TimeUnit.SECONDS.toMillis(10));
     }
 
     /**

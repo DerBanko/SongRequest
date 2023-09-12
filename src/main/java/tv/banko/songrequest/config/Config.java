@@ -215,6 +215,66 @@ public class Config {
     }
 
     /**
+     * Get the name of the play last song redemption from the config.
+     *
+     * @return The name of the skip song redemption.
+     */
+    public String getTwitchRedemptionPlayLastSong() {
+        return this.object.getAsJsonObject("twitch")
+                .getAsJsonObject("redemption")
+                .get("playLastSong")
+                .getAsString();
+    }
+
+    /**
+     * Get the name of the start playback redemption from the config.
+     *
+     * @return The name of the skip song redemption.
+     */
+    public String getTwitchRedemptionStartPlayback() {
+        return this.object.getAsJsonObject("twitch")
+                .getAsJsonObject("redemption")
+                .get("startPlayback")
+                .getAsString();
+    }
+
+    /**
+     * Get the name of the pause playback redemption from the config.
+     *
+     * @return The name of the skip song redemption.
+     */
+    public String getTwitchRedemptionPausePlayback() {
+        return this.object.getAsJsonObject("twitch")
+                .getAsJsonObject("redemption")
+                .get("pausePlayback")
+                .getAsString();
+    }
+
+    /**
+     * Get the name of the skip ten seconds redemption from the config.
+     *
+     * @return The name of the skip song redemption.
+     */
+    public String getTwitchRedemptionSkipTenSeconds() {
+        return this.object.getAsJsonObject("twitch")
+                .getAsJsonObject("redemption")
+                .get("skipTenSeconds")
+                .getAsString();
+    }
+
+    /**
+     * Get the name of the play last ten seconds redemption from the config.
+     *
+     * @return The name of the skip song redemption.
+     */
+    public String getTwitchRedemptionPlayLastTenSeconds() {
+        return this.object.getAsJsonObject("twitch")
+                .getAsJsonObject("redemption")
+                .get("playLastTenSeconds")
+                .getAsString();
+    }
+
+    /**
      * Set a string value in the config.
      *
      * @param key   The key in the config.

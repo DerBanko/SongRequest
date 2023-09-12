@@ -111,29 +111,45 @@ public class Twitch {
                     }
 
                     String trackId = (String) trackIdObject;
-                    this.request.getSpotify().addSongToQueue(trackId).whenCompleteAsync((o, addThrowable) -> {
-                        if (addThrowable != null) {
-                            addThrowable.printStackTrace();
-                            this.changeRedemptionStatus(event, RedemptionStatus.CANCELED);
-                            return;
-                        }
-
-                        this.changeRedemptionStatus(event, RedemptionStatus.FULFILLED);
-                    });
+                    this.request.getSpotify().addSongToQueue(trackId).whenCompleteAsync((o, actionThrowable) ->
+                            this.action(event, actionThrowable));
                 });
                 return;
             }
 
             if (title.equals(this.request.getConfig().getTwitchRedemptionSkipSong())) {
-                this.request.getSpotify().skipSong().whenCompleteAsync((o, skipThrowable) -> {
-                    if (skipThrowable != null) {
-                        skipThrowable.printStackTrace();
-                        this.changeRedemptionStatus(event, RedemptionStatus.CANCELED);
-                        return;
-                    }
+                this.request.getSpotify().skipSong().whenCompleteAsync((o, actionThrowable) ->
+                        this.action(event, actionThrowable));
+                return;
+            }
 
-                    this.changeRedemptionStatus(event, RedemptionStatus.FULFILLED);
-                });
+            if (title.equals(this.request.getConfig().getTwitchRedemptionPlayLastSong())) {
+                this.request.getSpotify().playLastSong().whenCompleteAsync((o, actionThrowable) ->
+                        this.action(event, actionThrowable));
+                return;
+            }
+
+            if (title.equals(this.request.getConfig().getTwitchRedemptionPausePlayback())) {
+                this.request.getSpotify().pausePlayback().whenCompleteAsync((o, actionThrowable) ->
+                        this.action(event, actionThrowable));
+                return;
+            }
+
+            if (title.equals(this.request.getConfig().getTwitchRedemptionStartPlayback())) {
+                this.request.getSpotify().startPlayback().whenCompleteAsync((o, actionThrowable) ->
+                        this.action(event, actionThrowable));
+                return;
+            }
+
+            if (title.equals(this.request.getConfig().getTwitchRedemptionSkipTenSeconds())) {
+                this.request.getSpotify().skipTenSeconds().whenCompleteAsync((o, actionThrowable) ->
+                        this.action(event, actionThrowable));
+                return;
+            }
+
+            if (title.equals(this.request.getConfig().getTwitchRedemptionPlayLastTenSeconds())) {
+                this.request.getSpotify().playLastTenSeconds().whenCompleteAsync((o, actionThrowable) ->
+                        this.action(event, actionThrowable));
             }
         });
     }
@@ -226,5 +242,15 @@ public class Twitch {
         this.client.getHelix().updateRedemptionStatus(this.userCredentials.getAccessToken(), this.broadcasterId,
                 event.getRedemption().getReward().getId(), Collections.singletonList(event.getRedemption().getId()),
                 status).queue();
+    }
+
+    private void action(RewardRedeemedEvent event, Throwable throwable) {
+        if (throwable != null) {
+            throwable.printStackTrace();
+            this.changeRedemptionStatus(event, RedemptionStatus.CANCELED);
+            return;
+        }
+
+        this.changeRedemptionStatus(event, RedemptionStatus.FULFILLED);
     }
 }
