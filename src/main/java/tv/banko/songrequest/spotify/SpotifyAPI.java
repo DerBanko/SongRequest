@@ -114,7 +114,7 @@ public class SpotifyAPI {
 
             try {
                 JsonObject object = JsonParser.parseString(response.body().string()).getAsJsonObject();
-                int progress = object.get("progress_ms").getAsInt() + offset;
+                int progress = Math.max(object.get("progress_ms").getAsInt() + offset, 0);
 
                 this.sendNoResponseBodyRequest(MessageFormat.format(offsetURL, "" + progress), HTTPMethod.PUT)
                         .whenCompleteAsync((o, throwable) -> {
