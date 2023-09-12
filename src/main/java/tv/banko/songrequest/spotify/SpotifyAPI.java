@@ -352,6 +352,7 @@ public class SpotifyAPI {
 
             switch (method) {
                 case POST -> builder.post(RequestBody.create(new byte[0]));
+                case PUT -> builder.put(RequestBody.create(new byte[0]));
                 case GET -> builder.get();
             }
 
