@@ -16,6 +16,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("ch.qos.logback:logback-classic:1.3.5")
     implementation("org.mongodb:mongodb-driver-reactivestreams:4.10.2")
+    implementation("com.eclipsesource.jaxrs:jersey-all:2.22.2")
 }
 
 java {
