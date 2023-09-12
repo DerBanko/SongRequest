@@ -203,6 +203,51 @@ public class Twitch {
                             .withTitle(skipSong)
                             .withBroadcasterId(this.broadcasterId)).execute();
         }
+
+        String playLastSong = config.getTwitchRedemptionPlayLastSong();
+
+        if (!Objects.equals(playLastSong, "") && rewardList.getRewards().stream().noneMatch(reward -> reward.getTitle().equals(playLastSong))) {
+            this.client.getHelix().createCustomReward(this.userCredentials.getAccessToken(), this.broadcasterId,
+                    new CustomReward().withCost(1).withIsEnabled(false)
+                            .withTitle(playLastSong)
+                            .withBroadcasterId(this.broadcasterId)).execute();
+        }
+
+        String skipTenSeconds = config.getTwitchRedemptionSkipTenSeconds();
+
+        if (!Objects.equals(skipTenSeconds, "") && rewardList.getRewards().stream().noneMatch(reward -> reward.getTitle().equals(skipTenSeconds))) {
+            this.client.getHelix().createCustomReward(this.userCredentials.getAccessToken(), this.broadcasterId,
+                    new CustomReward().withCost(1).withIsEnabled(false)
+                            .withTitle(skipTenSeconds)
+                            .withBroadcasterId(this.broadcasterId)).execute();
+        }
+
+        String playLastTenSeconds = config.getTwitchRedemptionPlayLastTenSeconds();
+
+        if (!Objects.equals(playLastTenSeconds, "") && rewardList.getRewards().stream().noneMatch(reward -> reward.getTitle().equals(playLastTenSeconds))) {
+            this.client.getHelix().createCustomReward(this.userCredentials.getAccessToken(), this.broadcasterId,
+                    new CustomReward().withCost(1).withIsEnabled(false)
+                            .withTitle(playLastTenSeconds)
+                            .withBroadcasterId(this.broadcasterId)).execute();
+        }
+
+        String startPlayback = config.getTwitchRedemptionStartPlayback();
+
+        if (!Objects.equals(startPlayback, "") && rewardList.getRewards().stream().noneMatch(reward -> reward.getTitle().equals(startPlayback))) {
+            this.client.getHelix().createCustomReward(this.userCredentials.getAccessToken(), this.broadcasterId,
+                    new CustomReward().withCost(1).withIsEnabled(false)
+                            .withTitle(startPlayback)
+                            .withBroadcasterId(this.broadcasterId)).execute();
+        }
+
+        String pausePlayback = config.getTwitchRedemptionPausePlayback();
+
+        if (!Objects.equals(pausePlayback, "") && rewardList.getRewards().stream().noneMatch(reward -> reward.getTitle().equals(pausePlayback))) {
+            this.client.getHelix().createCustomReward(this.userCredentials.getAccessToken(), this.broadcasterId,
+                    new CustomReward().withCost(1).withIsEnabled(false)
+                            .withTitle(pausePlayback)
+                            .withBroadcasterId(this.broadcasterId)).execute();
+        }
     }
 
     /**
