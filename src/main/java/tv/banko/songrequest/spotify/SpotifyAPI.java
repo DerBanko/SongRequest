@@ -65,7 +65,7 @@ public class SpotifyAPI {
      */
     public CompletableFuture<Object> startPlayback() {
         String url = "https://api.spotify.com/v1/me/player/play";
-        return this.sendNoResponseBodyRequest(url);
+        return this.sendNoResponseBodyRequest(url, HTTPMethod.PUT);
     }
 
     /**
@@ -75,7 +75,7 @@ public class SpotifyAPI {
      */
     public CompletableFuture<Object> pausePlayback() {
         String url = "https://api.spotify.com/v1/me/player/pause";
-        return this.sendNoResponseBodyRequest(url);
+        return this.sendNoResponseBodyRequest(url, HTTPMethod.PUT);
     }
 
     /**
@@ -85,7 +85,7 @@ public class SpotifyAPI {
      */
     public CompletableFuture<Object> offsetPlaybackProgress(int offset) {
         CompletableFuture<Object> future = new CompletableFuture<>();
-        String currentURL = "https://api.spotify.com/v1/me/player/pause";
+        String currentURL = "https://api.spotify.com/v1/me/player/currently-playing";
         String offsetURL = "https://api.spotify.com/v1/me/player/seek?position_ms={0}";
 
         this.sendRequest(currentURL, HTTPMethod.GET, (response, currentFuture) -> {
