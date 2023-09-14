@@ -129,7 +129,7 @@ public class SpotifyAPI {
             }
         });
 
-        return this.sendNoResponseBodyRequest(currentURL);
+        return future;
     }
 
     /**
@@ -305,7 +305,7 @@ public class SpotifyAPI {
                 return;
             }
 
-            if (response.code() != 204) {
+            if (response.code() < 200 || response.code() > 299) {
                 try {
                     assert response.body() != null;
                     future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": " + response.body().string()));
