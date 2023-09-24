@@ -196,11 +196,9 @@ public class SpotifyAPI {
                         builder.append(artistObject.get("name").getAsString());
                     }
 
-                    System.out.println("added " + queueId);
                     list.add(builder.toString());
                 }
 
-                System.out.println("completed");
                 future.complete(list);
             } catch (IOException e) {
                 future.completeExceptionally(e);
