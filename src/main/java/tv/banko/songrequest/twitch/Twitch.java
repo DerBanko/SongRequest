@@ -105,6 +105,10 @@ public class Twitch {
                     builder.append(list.get(i));
                 }
 
+                if (list.isEmpty()) {
+                    builder.append("Queue empty");
+                }
+
                 this.client.getChat().sendMessage(event.getChannel().getName(),
                         "@" + event.getUser().getName() + " ► Songs: " + builder);
             });

@@ -171,7 +171,7 @@ public class SpotifyAPI {
             try {
                 JsonObject object = JsonParser.parseString(response.body().string()).getAsJsonObject();
 
-                if (object.has("queue")) {
+                if (!object.has("queue")) {
                     future.complete(Collections.emptyList());
                     return;
                 }
@@ -179,6 +179,8 @@ public class SpotifyAPI {
                 List<String> list = new ArrayList<>();
 
                 JsonArray queue = object.getAsJsonArray("queue");
+
+                System.out.println(queue.toString());
 
                 for (int queueId = 0; queueId < Math.min(queue.size(), 5); queueId++) {
                     StringBuilder builder = new StringBuilder();
