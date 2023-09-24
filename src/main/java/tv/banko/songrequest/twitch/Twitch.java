@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import tv.banko.songrequest.SongRequest;
 import tv.banko.songrequest.config.Config;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -70,25 +71,43 @@ public class Twitch {
      * @param event The channel message event.
      */
     private void onChannelMessage(@NotNull ChannelMessageEvent event) {
-        if (!event.getPermissions().contains(CommandPermission.BROADCASTER)) {
-            return;
-        }
+        String[] messageSplit = event.getMessage().split(" ");
+        String command = messageSplit[0];
+        String[] args = Arrays.copyOfRange(messageSplit, 1, messageSplit.length);
 
-        String[] args = event.getMessage().split(" ");
+        switch (command.toLowerCase()) {
+            case "!sr-spotify" -> {
+                if (!event.getPermissions().contains(CommandPermission.BROADCASTER)) {
+                    return;
+                }
 
-        if (args[0].equalsIgnoreCase("!sr-spotify")) {
-            this.validateCredentials().whenCompleteAsync((aBoolean, validateThrowable) ->
-                    this.request.getSpotify().getAPI().setAuthorizationFromCode(args[1]).whenCompleteAsync((o, authThrowable) -> {
-                        if (authThrowable != null) {
-                            authThrowable.printStackTrace();
-                            this.client.getChat().sendMessage(event.getUser().getName(),
-                                    "@" + event.getUser().getName() + ", Error: " + authThrowable.getClass().getSimpleName());
-                            return;
-                        }
+                this.validateCredentials().whenCompleteAsync((aBoolean, validateThrowable) ->
+                        this.request.getSpotify().getAPI().setAuthorizationFromCode(args[0]).whenCompleteAsync((o, authThrowable) -> {
+                            if (authThrowable != null) {
+                                authThrowable.printStackTrace();
+                                this.client.getChat().sendMessage(event.getChannel().getName(),
+                                        "@" + event.getUser().getName() + ", Error: " + authThrowable.getClass().getSimpleName());
+                                return;
+                            }
 
-                        this.client.getChat().sendMessage(event.getUser().getName(),
-                                "@" + event.getUser().getName() + ", successfully connected.");
-                    }));
+                            this.client.getChat().sendMessage(event.getChannel().getName(),
+                                    "@" + event.getUser().getName() + ", successfully connected.");
+                        }));
+            }
+            case "!queue" -> this.request.getSpotify().getQueue().whenCompleteAsync((list, throwable) -> {
+                StringBuilder builder = new StringBuilder();
+
+                for (int i = 0; i < builder.length(); i++) {
+                    if (i != 0) {
+                        builder.append("; ");
+                    }
+
+                    builder.append(list.get(i));
+                }
+
+                this.client.getChat().sendMessage(event.getChannel().getName(),
+                        "@" + event.getUser().getName() + " ► Songs: " + builder);
+            });
         }
     }
 

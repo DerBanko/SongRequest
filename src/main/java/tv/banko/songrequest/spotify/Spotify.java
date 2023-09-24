@@ -3,6 +3,7 @@ package tv.banko.songrequest.spotify;
 import org.jetbrains.annotations.NotNull;
 import tv.banko.songrequest.SongRequest;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -67,7 +68,7 @@ public class Spotify {
      *
      * @return A completable future which contains a true boolean when the execution was successful.
      */
-    public CompletableFuture<Object> skipTenSeconds() {
+    public CompletableFuture<Boolean> skipTenSeconds() {
         return this.api.offsetPlaybackProgress((int) TimeUnit.SECONDS.toMillis(10));
     }
 
@@ -76,8 +77,17 @@ public class Spotify {
      *
      * @return A completable future which contains a true boolean when the execution was successful.
      */
-    public CompletableFuture<Object> playLastTenSeconds() {
+    public CompletableFuture<Boolean> playLastTenSeconds() {
         return this.api.offsetPlaybackProgress((-1) * (int) TimeUnit.SECONDS.toMillis(10));
+    }
+
+    /**
+     * Gets the next 5 songs from the queue.
+     *
+     * @return A completable future which contains a List of Strings with the song's name and the artist's name.
+     */
+    public CompletableFuture<List<String>> getQueue() {
+        return this.api.getQueue();
     }
 
     /**

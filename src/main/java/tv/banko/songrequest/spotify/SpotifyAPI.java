@@ -1,6 +1,7 @@
 package tv.banko.songrequest.spotify;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import okhttp3.*;
@@ -11,7 +12,10 @@ import tv.banko.songrequest.util.HTTPMethod;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
@@ -83,16 +87,16 @@ public class SpotifyAPI {
      *
      * @return A completable future which contains a true boolean when the execution was successful.
      */
-    public CompletableFuture<Object> offsetPlaybackProgress(int offset) {
-        CompletableFuture<Object> future = new CompletableFuture<>();
+    public CompletableFuture<Boolean> offsetPlaybackProgress(int offset) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
         String currentURL = "https://api.spotify.com/v1/me/player/currently-playing";
         String offsetURL = "https://api.spotify.com/v1/me/player/seek?position_ms={0}";
 
         this.sendRequest(currentURL, HTTPMethod.GET, (response, currentFuture) -> {
-            if (currentFuture.isDone()) {
+            if (currentFuture.isCompletedExceptionally()) {
                 try {
-                    future.complete(currentFuture.get());
-                } catch (InterruptedException | ExecutionException e) {
+                    currentFuture.get();
+                } catch (Exception e) {
                     future.completeExceptionally(e);
                 }
                 return;
@@ -122,8 +126,80 @@ public class SpotifyAPI {
                                 future.completeExceptionally(throwable);
                                 return;
                             }
-                            future.complete(o);
+                            future.complete((Boolean) o);
                         });
+            } catch (IOException e) {
+                future.completeExceptionally(e);
+            }
+        });
+
+        return future;
+    }
+
+    /**
+     * Gets the next 5 songs from the queue.
+     *
+     * @return A completable future which contains a List of Strings with the song's name and the artist's name.
+     */
+    public CompletableFuture<List<String>> getQueue() {
+        CompletableFuture<List<String>> future = new CompletableFuture<>();
+
+        this.sendRequest("https://api.spotify.com/v1/me/player/queue", HTTPMethod.GET, (response, currentFuture) -> {
+            if (currentFuture.isCompletedExceptionally()) {
+                try {
+                    currentFuture.get();
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
+                }
+                return;
+            }
+
+            if (response.body() == null) {
+                future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": null"));
+                return;
+            }
+
+            if (response.code() != 200) {
+                try {
+                    future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": " + response.body().string()));
+                } catch (IOException e) {
+                    future.completeExceptionally(e);
+                }
+                return;
+            }
+
+            try {
+                JsonObject object = JsonParser.parseString(response.body().string()).getAsJsonObject();
+
+                if (object.has("queue")) {
+                    future.complete(Collections.emptyList());
+                    return;
+                }
+
+                List<String> list = new ArrayList<>();
+
+                JsonArray queue = object.getAsJsonArray("queue");
+
+                for (int queueId = 0; queueId < Math.min(queue.size(), 5); queueId++) {
+                    StringBuilder builder = new StringBuilder();
+                    JsonObject queueObject = queue.get(queueId).getAsJsonObject();
+
+                    builder.append(queueObject.get("name")).append(" - ");
+                    JsonArray artists = queueObject.getAsJsonArray("artists");
+
+                    for (int artistId = 0; artistId < artists.size(); artistId++) {
+                        if (artistId != 0) {
+                            builder.append(", ");
+                        }
+
+                        JsonObject artistObject = artists.get(artistId).getAsJsonObject();
+                        builder.append(artistObject.get("name").getAsString());
+                    }
+
+                    list.add(builder.toString());
+                }
+
+                future.complete(list);
             } catch (IOException e) {
                 future.completeExceptionally(e);
             }
@@ -143,7 +219,12 @@ public class SpotifyAPI {
                 query, "track");
 
         return this.sendRequest(url, HTTPMethod.GET, (response, future) -> {
-            if (future.isDone()) {
+            if (future.isCompletedExceptionally()) {
+                try {
+                    future.get();
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
+                }
                 return;
             }
 
