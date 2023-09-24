@@ -95,6 +95,11 @@ public class Twitch {
                         }));
             }
             case "!queue" -> this.request.getSpotify().getQueue().whenCompleteAsync((list, throwable) -> {
+                if (throwable != null) {
+                    throwable.printStackTrace();
+                    return;
+                }
+
                 StringBuilder builder = new StringBuilder();
 
                 for (int i = 0; i < builder.length(); i++) {
@@ -102,12 +107,15 @@ public class Twitch {
                         builder.append("; ");
                     }
 
+                    System.out.println(list.get(i));
                     builder.append(list.get(i));
                 }
 
-                if (list.isEmpty()) {
+                if (builder.isEmpty()) {
                     builder.append("Queue empty");
                 }
+
+                System.out.println(builder);
 
                 this.client.getChat().sendMessage(event.getChannel().getName(),
                         "@" + event.getUser().getName() + " ► Songs: " + builder);
