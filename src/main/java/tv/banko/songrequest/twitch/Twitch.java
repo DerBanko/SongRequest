@@ -107,7 +107,6 @@ public class Twitch {
                         builder.append("; ");
                     }
 
-                    System.out.println(list.get(i));
                     builder.append(list.get(i));
                 }
 
