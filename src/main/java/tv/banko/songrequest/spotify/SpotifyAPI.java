@@ -180,11 +180,7 @@ public class SpotifyAPI {
 
                 JsonArray queue = object.getAsJsonArray("queue");
 
-                System.out.println("queue size: " + queue.size());
-
                 for (int queueId = 0; queueId < Math.min(queue.size(), 5); queueId++) {
-                    System.out.println("queueId = " + queueId);
-
                     StringBuilder builder = new StringBuilder();
                     JsonObject queueObject = queue.get(queueId).getAsJsonObject();
 
@@ -200,10 +196,11 @@ public class SpotifyAPI {
                         builder.append(artistObject.get("name").getAsString());
                     }
 
-                    System.out.println(builder);
+                    System.out.println("added " + queueId);
                     list.add(builder.toString());
                 }
 
+                System.out.println("completed");
                 future.complete(list);
             } catch (IOException e) {
                 future.completeExceptionally(e);
