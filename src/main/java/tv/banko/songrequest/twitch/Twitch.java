@@ -115,8 +115,6 @@ public class Twitch {
                     builder.append("Queue empty");
                 }
 
-                System.out.println(builder);
-
                 this.client.getChat().sendMessage(event.getChannel().getName(),
                         "@" + event.getUser().getName() + " ► Songs: " + builder);
             });
