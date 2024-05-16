@@ -142,15 +142,8 @@ public class Twitch {
                     }
 
                     String trackId = (String) trackIdObject;
-                    this.request.getSpotify().addSongToQueue(trackId).whenCompleteAsync((o, actionThrowable) -> {
-                        if (this.action(event, actionThrowable)) {
-                            this.sendMessage(event.getRedemption().getUser().getLogin(), "Song added to queue.");
-                            return;
-                        }
-
-                        this.sendMessage(event.getRedemption().getUser().getLogin(),
-                                "Song was not added to queue. You have been refunded.");
-                    });
+                    this.request.getSpotify().addSongToQueue(trackId).whenCompleteAsync((o, actionThrowable) ->
+                            this.action(event, actionThrowable));
                 });
                 return;
             }
@@ -328,14 +321,13 @@ public class Twitch {
                 status).queue();
     }
 
-    private boolean action(RewardRedeemedEvent event, Throwable throwable) {
+    private void action(RewardRedeemedEvent event, Throwable throwable) {
         if (throwable != null) {
             throwable.printStackTrace();
             this.changeRedemptionStatus(event, RedemptionStatus.CANCELED);
-            return false;
+            return;
         }
 
         this.changeRedemptionStatus(event, RedemptionStatus.FULFILLED);
-        return true;
     }
 }
