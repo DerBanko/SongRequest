@@ -28,7 +28,6 @@ public class Spotify {
 
         future.whenCompleteAsync((obj, throwable) -> {
             if (throwable != null) {
-                System.out.println("Error while adding song to queue: " + throwable.getMessage());
                 return;
             }
 

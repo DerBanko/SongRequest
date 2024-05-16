@@ -12,10 +12,7 @@ import tv.banko.songrequest.util.HTTPMethod;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
@@ -142,15 +139,15 @@ public class SpotifyAPI {
      * @param spotifyTrackId The id of the track (spotify:track:<ID>).
      */
     public void addToPlaylist(String spotifyTrackId) {
+        Optional<String> optional = this.spotify.getRequest().getConfig().getSpotifyPlaylistID();
+
+        if (optional.isEmpty()) {
+            return;
+        }
+
         String url = MessageFormat.format("https://api.spotify.com/v1/playlists/{0}/tracks?uris={1}",
-                this.spotify.getRequest().getConfig().getSpotifyPlaylistID(), spotifyTrackId);
-        this.sendNoResponseBodyRequest(url, HTTPMethod.POST).whenCompleteAsync((o, throwable) -> {
-            if (throwable != null) {
-                System.out.println("Error while adding song to playlist: " + throwable.getMessage());
-                return;
-            }
-            System.out.println(o);
-        });
+                optional.get(), spotifyTrackId);
+        this.sendNoResponseBodyRequest(url, HTTPMethod.POST);
     }
 
     /**
