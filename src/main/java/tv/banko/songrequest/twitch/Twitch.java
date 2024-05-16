@@ -29,6 +29,7 @@ public class Twitch {
     private final TwitchClient client;
     private final TwitchAPI api;
 
+    private String broadcasterName;
     private String broadcasterId;
 
     public Twitch(@NotNull SongRequest request) {
@@ -61,6 +62,11 @@ public class Twitch {
         }
     }
 
+    public void sendMessage(String user, String message) {
+        this.client.getChat().sendMessage(this.broadcasterName,
+                "@" + user + " ► " + message);
+    }
+
     public SongRequest getRequest() {
         return request;
     }
@@ -85,13 +91,11 @@ public class Twitch {
                         this.request.getSpotify().getAPI().setAuthorizationFromCode(args[0]).whenCompleteAsync((o, authThrowable) -> {
                             if (authThrowable != null) {
                                 authThrowable.printStackTrace();
-                                this.client.getChat().sendMessage(event.getChannel().getName(),
-                                        "@" + event.getUser().getName() + ", Error: " + authThrowable.getClass().getSimpleName());
+                                this.sendMessage(event.getUser().getName(), "Error: " + authThrowable.getClass().getSimpleName());
                                 return;
                             }
 
-                            this.client.getChat().sendMessage(event.getChannel().getName(),
-                                    "@" + event.getUser().getName() + ", successfully connected.");
+                            this.sendMessage(event.getUser().getName(), "SongRequest successfully connected.");
                         }));
             }
             case "!queue" -> this.request.getSpotify().getQueue().whenCompleteAsync((list, throwable) -> {
@@ -114,8 +118,7 @@ public class Twitch {
                     builder.append("Queue empty");
                 }
 
-                this.client.getChat().sendMessage(event.getChannel().getName(),
-                        "@" + event.getUser().getName() + " ► Songs: " + builder);
+                this.sendMessage(event.getUser().getName(), "Songs: " + builder);
             });
         }
     }
@@ -139,8 +142,15 @@ public class Twitch {
                     }
 
                     String trackId = (String) trackIdObject;
-                    this.request.getSpotify().addSongToQueue(trackId).whenCompleteAsync((o, actionThrowable) ->
-                            this.action(event, actionThrowable));
+                    this.request.getSpotify().addSongToQueue(trackId).whenCompleteAsync((o, actionThrowable) -> {
+                        if (this.action(event, actionThrowable)) {
+                            this.sendMessage(event.getRedemption().getUser().getLogin(), "Song added to queue.");
+                            return;
+                        }
+
+                        this.sendMessage(event.getRedemption().getUser().getLogin(),
+                                "Song was not added to queue. You have been refunded.");
+                    });
                 });
                 return;
             }
@@ -193,6 +203,7 @@ public class Twitch {
                     Collections.singletonList(config.getTwitchChannelName().toLowerCase())).execute();
 
             list.getUsers().forEach(user -> {
+                this.broadcasterName = user.getLogin();
                 this.broadcasterId = user.getId();
                 this.client.getPubSub().listenForChannelPointsRedemptionEvents(this.clientCredentials, user.getId());
             });
@@ -317,13 +328,14 @@ public class Twitch {
                 status).queue();
     }
 
-    private void action(RewardRedeemedEvent event, Throwable throwable) {
+    private boolean action(RewardRedeemedEvent event, Throwable throwable) {
         if (throwable != null) {
             throwable.printStackTrace();
             this.changeRedemptionStatus(event, RedemptionStatus.CANCELED);
-            return;
+            return false;
         }
 
         this.changeRedemptionStatus(event, RedemptionStatus.FULFILLED);
+        return true;
     }
 }
