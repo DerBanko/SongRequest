@@ -449,8 +449,10 @@ public class SpotifyAPI {
                     .header("Authorization", this.spotify.getRequest().getConfig().getSpotifyAccessToken());
 
             switch (method) {
-                case POST -> builder.post(RequestBody.create(new byte[0]));
-                case PUT -> builder.put(RequestBody.create(new byte[0]));
+                case POST -> builder.post(RequestBody.create(new byte[0]))
+                        .header("Content-Type", "application/x-www-form-urlencoded");
+                case PUT -> builder.put(RequestBody.create(new byte[0]))
+                        .header("Content-Type", "application/x-www-form-urlencoded");
                 case GET -> builder.get();
             }
 
