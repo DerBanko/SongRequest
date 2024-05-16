@@ -31,7 +31,7 @@ A song request system which helps you manage your song requests for Spotify via 
 8. Replace the `REFRESH_TOKEN` from `twitch.refreshToken` in the config.json file with the value of `refresh_token` of the response. 
 9. Start the application again. It should start without any issues.
 10. To specify a spotify account, Copy the following link and replace all placeholders with the data from your **Spotify** application:
-`https://accounts.spotify.com/authorize?response_type=code&client_id=[CLIENT_ID]&scope=user-read-playback-state%20user-modify-playback-state&redirect_uri=[REDIRECT_URI]`
+`https://accounts.spotify.com/authorize?response_type=code&client_id=[CLIENT_ID]&scope=user-read-playback-state%20user-modify-playback-state%20playlist-modify-public%20playlist-modify-private&redirect_uri=[REDIRECT_URI]`
 11. Authorize and copy the code from your browser's url. (It is longer than the twitch code, watch out)
 12. Enter `!sr-spotify CODE` in the your Twitch channel's chat (replace `CODE` with the code from the browser url).
 13. You are ready to go. Try using the rewards :)

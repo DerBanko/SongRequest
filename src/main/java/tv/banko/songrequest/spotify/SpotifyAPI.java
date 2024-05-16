@@ -144,7 +144,13 @@ public class SpotifyAPI {
     public void addToPlaylist(String spotifyTrackId) {
         String url = MessageFormat.format("https://api.spotify.com/v1/playlists/{0}/tracks?uris={1}",
                 this.spotify.getRequest().getConfig().getSpotifyPlaylistID(), spotifyTrackId);
-        this.sendNoResponseBodyRequest(url, HTTPMethod.POST);
+        this.sendNoResponseBodyRequest(url, HTTPMethod.POST).whenCompleteAsync((o, throwable) -> {
+            if (throwable != null) {
+                System.out.println("Error while adding song to playlist: " + throwable.getMessage());
+                return;
+            }
+            System.out.println(o);
+        });
     }
 
     /**

@@ -27,9 +27,11 @@ public class Spotify {
         CompletableFuture<Object> future = this.api.addSongToQueue(spotifyTrackId);
 
         future.whenCompleteAsync((obj, throwable) -> {
-            if (obj == null || throwable != null) {
+            if (throwable != null) {
+                System.out.println("Error while adding song to queue: " + throwable.getMessage());
                 return;
             }
+
             this.api.addToPlaylist(spotifyTrackId);
         });
 
