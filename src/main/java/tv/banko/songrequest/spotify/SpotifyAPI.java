@@ -137,6 +137,17 @@ public class SpotifyAPI {
     }
 
     /**
+     * Add a song to the playlist.
+     *
+     * @param spotifyTrackId The id of the track (spotify:track:<ID>).
+     */
+    public void addToPlaylist(String spotifyTrackId) {
+        String url = MessageFormat.format("https://api.spotify.com/v1/playlists/{0}/tracks?uris={1}",
+                this.spotify.getRequest().getConfig().getSpotifyPlaylistID(), spotifyTrackId);
+        this.sendNoResponseBodyRequest(url, HTTPMethod.POST);
+    }
+
+    /**
      * Gets the next 5 songs from the queue.
      *
      * @return A completable future which contains a List of Strings with the song's name and the artist's name.

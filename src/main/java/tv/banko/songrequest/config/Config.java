@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class Config {
@@ -122,6 +123,22 @@ public class Config {
         return this.object.getAsJsonObject("spotify")
                 .get("redirectURI")
                 .getAsString();
+    }
+
+    /**
+     * Get the spotify playlist id.
+     *
+     * @return The spotify playlist id.
+     */
+    public Optional<String> getSpotifyPlaylistID() {
+        JsonElement element = this.object.getAsJsonObject("spotify")
+                .get("playlistID");
+
+        if (element.isJsonNull()) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(element.getAsString());
     }
 
     /**

@@ -24,7 +24,16 @@ public class Spotify {
      * @return A completable future which contains a true boolean when the execution was successful.
      */
     public CompletableFuture<Object> addSongToQueue(@NotNull String spotifyTrackId) {
-        return this.api.addSongToQueue(spotifyTrackId);
+        CompletableFuture<Object> future = this.api.addSongToQueue(spotifyTrackId);
+
+        future.whenCompleteAsync((obj, throwable) -> {
+            if (obj == null || throwable != null) {
+                return;
+            }
+            this.api.addToPlaylist(spotifyTrackId);
+        });
+
+        return future;
     }
 
     /**
