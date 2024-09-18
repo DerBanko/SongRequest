@@ -8,11 +8,12 @@ public class SongRequest {
 
     private final Config config;
     private final Spotify spotify;
+    private final Twitch twitch;
 
     public SongRequest() {
         this.config = new Config();
         this.spotify = new Spotify(this);
-        new Twitch(this);
+        this.twitch = new Twitch(this);
     }
 
     public Config getConfig() {
@@ -21,5 +22,9 @@ public class SongRequest {
 
     public Spotify getSpotify() {
         return spotify;
+    }
+
+    public Twitch getTwitch() {
+        return twitch;
     }
 }

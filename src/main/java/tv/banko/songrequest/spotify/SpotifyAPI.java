@@ -1,7 +1,6 @@
 package tv.banko.songrequest.spotify;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import okhttp3.*;
@@ -14,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 
 public class SpotifyAPI {
@@ -269,6 +267,64 @@ public class SpotifyAPI {
                 JsonObject item = items.get(0).getAsJsonObject();
                 String id = item.get("id").getAsString();
                 future.complete("spotify:track:" + id);
+            } catch (IOException e) {
+                future.completeExceptionally(e);
+            }
+        });
+    }
+
+    /**
+     * Get the name of a specific track.
+     *
+     * @param trackId The track's id
+     * @return A completable future which contains the name and the artist of the song when the execution was successful.
+     */
+    public CompletableFuture<Object> getName(@NotNull String trackId) {
+        String url = MessageFormat.format("https://api.spotify.com/v1/tracks/{0}", trackId);
+
+        return this.sendRequest(url, HTTPMethod.GET, (response, future) -> {
+            if (future.isCompletedExceptionally()) {
+                try {
+                    future.get();
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
+                }
+                return;
+            }
+
+            if (response.body() == null) {
+                future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": null"));
+                return;
+            }
+
+            if (response.code() != 200) {
+                try {
+                    future.completeExceptionally(new RuntimeException("Error code " + response.code() + ": " + response.body().string()));
+                } catch (IOException e) {
+                    future.completeExceptionally(e);
+                }
+                return;
+            }
+
+            try {
+                JsonObject object = JsonParser.parseString(response.body().string()).getAsJsonObject();
+                String name = object.get("name").getAsString();
+
+                JsonArray artists = object.getAsJsonArray("artists");
+
+                StringBuilder builder = new StringBuilder();
+
+                artists.forEach(artist -> {
+                    JsonObject artistObject = artist.getAsJsonObject();
+
+                    if (!builder.isEmpty()) {
+                        builder.append(", ");
+                    }
+
+                    builder.append(artistObject.get("name").getAsString());
+                });
+
+                future.complete(name + " - " + builder.toString());
             } catch (IOException e) {
                 future.completeExceptionally(e);
             }

@@ -5,6 +5,7 @@ import tv.banko.songrequest.SongRequest;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class Spotify {
@@ -26,15 +27,13 @@ public class Spotify {
     public CompletableFuture<Object> addSongToQueue(@NotNull String spotifyTrackId) {
         CompletableFuture<Object> future = this.api.addSongToQueue(spotifyTrackId);
 
-        future.whenCompleteAsync((obj, throwable) -> {
-            if (throwable != null) {
-                return;
-            }
-
+        try {
+            future.get();
             this.api.addToPlaylist(spotifyTrackId);
-        });
-
-        return future;
+            return this.api.getName(spotifyTrackId);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**

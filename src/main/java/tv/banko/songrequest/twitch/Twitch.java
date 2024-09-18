@@ -142,8 +142,11 @@ public class Twitch {
                     }
 
                     String trackId = (String) trackIdObject;
-                    this.request.getSpotify().addSongToQueue(trackId).whenCompleteAsync((o, actionThrowable) ->
-                            this.action(event, actionThrowable));
+                    this.request.getSpotify().addSongToQueue(trackId).whenCompleteAsync((song, actionThrowable) -> {
+                        this.sendMessage(event.getRedemption().getUser().getDisplayName(),
+                                "Der Song " + song + " wurde zur Warteschlange hinzugefügt.");
+                        this.action(event, actionThrowable);
+                    });
                 });
                 return;
             }
