@@ -280,7 +280,7 @@ public class SpotifyAPI {
      * @return A completable future which contains the name and the artist of the song when the execution was successful.
      */
     public CompletableFuture<Object> getName(@NotNull String trackId) {
-        String url = MessageFormat.format("https://api.spotify.com/v1/tracks/{0}", trackId);
+        String url = MessageFormat.format("https://api.spotify.com/v1/tracks/{0}", trackId.replace("spotify:track:", ""));
 
         return this.sendRequest(url, HTTPMethod.GET, (response, future) -> {
             if (future.isCompletedExceptionally()) {
